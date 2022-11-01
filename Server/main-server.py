@@ -1,56 +1,44 @@
-#!/usr/bin/env python3
-
-import sys
 import socket
-import selectors
-import traceback
+import threading
 
-import libserver
+SERVER = "127.0.0.1"
+PORT = 8787
+ADDRESS = (SERVER, PORT)
+HEADER = 64     # Length -> 64
+FORMAT = 'utf-8'
+DISCONNECT_MESSAGE = '!DISCONNECT'
 
-sel = selectors.DefaultSelector()
-
-
-def accept_wrapper(sock):
-    conn, addr = sock.accept()  # Should be ready to read
-    print(f"Accepted connection from {addr}")
-    conn.setblocking(False)
-    message = libserver.Message(sel, conn, addr)
-    sel.register(conn, selectors.EVENT_READ, data=message)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(ADDRESS)
 
 
-if len(sys.argv) != 3:
-    print(f"Usage: {sys.argv[0]} <host> <port>")
-    sys.exit(1)
-
-host, port = sys.argv[1], int(sys.argv[2])
-lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Avoid bind() exception: OSError: [Errno 48] Address already in use
-lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-lsock.bind((host, port))
-lsock.listen()
-print(f"Listening on {(host, port)}")
-
-lsock.setblocking(False)
-sel.register(lsock, selectors.EVENT_READ, data=None)
-
-try:
-    while True:
-        events = sel.select(timeout=None)
-        for key, mask in events:
-            if key.data is None:
-                accept_wrapper(key.fileobj)
+def handle_client(connection, address):
+    print(f'[NEW CONNECTION] {address} connected.')
+    connected = True
+    while connected:
+        message_length = connection.recv(HEADER).decode(FORMAT)    # Get message-length from header
+        # If message is not Null
+        if message_length:
+            message_length = int(message_length)
+            message = connection.recv(message_length).decode(FORMAT)
+            if message == DISCONNECT_MESSAGE:
+                connected = False
+                print(f'[{address}] disconnected.')
             else:
-                message = key.data
-                try:
-                    message.process_events(mask)
-                except Exception:
-                    print(
-                        f"Main: Error: Exception for {message.addr}:\n"
-                        f"{traceback.format_exc()}"
-                    )
-                    message.close()
-except KeyboardInterrupt:
-    print("Caught keyboard interrupt, exiting")
-finally:
-    sel.close()
+                print(f'[{address}] {message}')
+
+    connection.close()
+
+
+def start():
+    server.listen()
+    print(f'[LISTENING] Server is listening on {SERVER}:{PORT}')
+    while True:
+        connection, address = server.accept()
+        thread = threading.Thread(target=handle_client, args=(connection, address))
+        thread.start()
+        print(f'[ACTIVE CONNECTIONS] {threading.active_count() - 1}')   # Minus main-thread
+
+
+print('[SERVER] Server is starting...')
+start()
