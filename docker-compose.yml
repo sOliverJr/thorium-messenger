@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  mongo_db:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "5001:27017"
+    container_name: thorium_mongo_db
+
