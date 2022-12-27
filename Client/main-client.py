@@ -38,6 +38,7 @@ def send_thread():
         print('[SERVER] Send-thread detected keyboard interrupt, terminating connection.')
         send(DISCONNECT_MESSAGE)
         stop_threads = True
+        return False
 
 
 def receive_thread(client):
@@ -77,6 +78,7 @@ def authenticate():
                 print(response)
                 return True
             else:
+                print(response)
                 print('[CLIENT] Error, disconnecting.')
                 return False
         elif selection == '2':
@@ -133,10 +135,15 @@ try:
 
     if authenticated:
         receiving_thread = threading.Thread(target=receive_thread, args=(client,))
+        receiving_thread.daemon = True
         receiving_thread.start()
 
-        receiving_thread = threading.Thread(target=send_thread, args=())
-        receiving_thread.start()
+        sending_thread = threading.Thread(target=send_thread, args=())
+        sending_thread.daemon = True
+        sending_thread.start()
+
+        receiving_thread.join()
+        sending_thread.join()
 
 except KeyboardInterrupt:
     print("[AGENT] Caught keyboard interrupt, exiting.")

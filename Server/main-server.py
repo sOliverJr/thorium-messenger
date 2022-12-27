@@ -12,7 +12,7 @@ MESSAGE_LENGTH = 1024
 # Format: {'username': connection}
 active_connections = {}
 # Format: {'username': 'password'}
-login_credentials = {}
+login_credentials = {'oli': 'test'}
 server_running = True
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,15 +40,16 @@ def receive_message(username):
             if message == DISCONNECT_MESSAGE:
                 disconnect_user_by_username(username, '[SERVER] Request accepted, disconnecting.')
                 broadcast_message(f'[SERVER] {username} disconnected.', username)
-                break
+                return False
 
             print(f'[{username}] {message}')
             broadcast_message(f'[{username}] {message}', username)
 
-        except:
+        except Exception as e:
+            print(f'Exception: {str(e)}')
             if username in active_connections:
                 disconnect_user_by_username(username, f'[SERVER] An error occurred, kicking {username}.')
-            break
+            return False
 
 
 def authenticate_user(auth_array, connection):
@@ -61,8 +62,9 @@ def authenticate_user(auth_array, connection):
         send_message(connection, f'Login successful, welcome {username}!')
         return True
     else:
-        if username in active_connections:
-            disconnect_user_by_username(auth_array[0], '[SERVER] Username ans password do not match, disconnecting.')
+        # if username in active_connections:
+        #   disconnect_user_by_username(auth_array[0], '[SERVER] Username and password do not match, disconnecting.')
+        disconnect_user_by_connection(connection, '[SERVER] Username and password do not match, disconnecting.')
         return False
 
 
@@ -122,9 +124,10 @@ def handle_client(connection):
             print(f'[SERVER] {username} joined the Server!')
             broadcast_message(f'[SERVER] {username} joined the Server!', username)
 
-            while server_running:
+            client_is_connected = True
+            while server_running and client_is_connected:
                 try:
-                    receive_message(username)
+                    client_is_connected = receive_message(username)
                 except:
                     break
         else:
