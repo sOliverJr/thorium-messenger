@@ -25,7 +25,6 @@ def send_thread():
 
     try:
         while not stop_threads:
-            # message_content = input('>')
             message_content = input()
             send(message_content)
 
@@ -135,16 +134,18 @@ try:
     authenticated = authenticate()
 
     if authenticated:
-        receiving_thread = threading.Thread(target=receive_thread, args=(client,))
-        receiving_thread.daemon = True
-        receiving_thread.start()
+        threads = []
 
-        sending_thread = threading.Thread(target=send_thread, args=())
-        sending_thread.daemon = True
-        sending_thread.start()
+        threads.append(threading.Thread(target=receive_thread, args=(client,)))
+        threads.append(threading.Thread(target=send_thread, args=()))
 
-        receiving_thread.join()
-        sending_thread.join()
+        for thread in threads:
+            thread.daemon = True
+            thread.start()
+
+        # needs to be separate
+        for thread in threads:
+            thread.join()
 
 except KeyboardInterrupt:
     print("[AGENT] Caught keyboard interrupt, exiting.")
