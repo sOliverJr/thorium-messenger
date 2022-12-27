@@ -13,7 +13,12 @@ class UserHandler:
     def add_user(self, item):
         self.user_collection.insert_one(item)
 
-    def update_user(self, username, element_to_update):
+    def get_user_by_username(self, username):
+        # returns 'None' if no element is found.
         query = {'user': username}
-        update_field = {"$set": element_to_update}
+        return self.user_collection.find_one(query, {'_id': 0})
+
+    def update_user(self, username, new_element):
+        query = {'user': username}
+        update_field = {"$set": new_element}
         self.user_collection.update_one(query, update_field)

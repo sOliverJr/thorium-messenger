@@ -91,6 +91,7 @@ def authenticate():
                 print(response)
                 return True
             else:
+                print(response)
                 print('[CLIENT] Error, disconnecting.')
                 return False
         else:

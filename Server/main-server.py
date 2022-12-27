@@ -1,3 +1,4 @@
+import database
 import socket
 import threading
 import time
@@ -12,11 +13,13 @@ MESSAGE_LENGTH = 1024
 # Format: {'username': connection}
 active_connections = {}
 # Format: {'username': 'password'}
-login_credentials = {'oli': 'test'}
+# login_credentials = {'oli': 'test'}
 server_running = True
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDRESS)
+
+user_db = database.UserHandler()
 
 
 def send_message(connection, msg):
@@ -54,10 +57,11 @@ def receive_message(username):
 
 def authenticate_user(auth_array, connection):
     username = auth_array[0]
-    if username not in login_credentials:
+    user = user_db.get_user_by_username(username)
+    if user is None:
         disconnect_user_by_connection(connection, '[SERVER] Username unknown, disconnecting.')
         return False
-    if auth_array[1] == login_credentials[username]:
+    if auth_array[1] == user['password']:
         active_connections[username] = connection
         send_message(connection, f'Login successful, welcome {username}!')
         return True
@@ -70,11 +74,16 @@ def authenticate_user(auth_array, connection):
 
 def create_user(auth_array, connection):
     username = auth_array[0]
-    if username in login_credentials:
+    user = user_db.get_user_by_username(username)
+    if user is not None:
         disconnect_user_by_connection(connection, '[SERVER] Username already exists, disconnecting.')
         return False
     active_connections[username] = connection
-    login_credentials[username] = auth_array[1]
+    new_user = {
+        'user': username,
+        'password': auth_array[1]
+    }
+    user_db.add_user(new_user)
     send_message(connection, f'User created successfully, welcome {username}!')
     return True
 
