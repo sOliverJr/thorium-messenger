@@ -30,3 +30,12 @@
 ***
 # Begriffe & Variablen
 - Verbindung: _Identifiziert den Client. Wir u.a. gebraucht um Nachrichten an diesen zurückzuschicken._
+- 
+
+
+user_in_db: {
+  'id': _string_,
+  'user': _string_,
+  'password': _string_,
+  'cryptkey': _string_
+}
