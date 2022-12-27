@@ -102,6 +102,8 @@ def get_valid_username():
         username = input('Enter username:')
         if len(username.split()) != 1:
             print('Username cannot contain whitespaces, try again.')
+        elif len(username) < 3:
+            print('Username must be at least 3 characters long, try again.')
         else:
             return username
 
@@ -120,6 +122,8 @@ def create_valid_password():
         password_1 = input('Enter password:')
         if len(password_1.split()) != 1:
             print('Password cannot contain whitespaces, try again.')
+        elif len(password_1) < 4:
+            print('Password must contain at least 4 characters, try again.')
         else:
             password_2 = input('Confirm password:')
             if password_1 == password_2:
