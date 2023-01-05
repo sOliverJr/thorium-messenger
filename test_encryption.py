@@ -19,11 +19,11 @@ def create_key(username, password):
     return base64.urlsafe_b64encode(hash.encode())
 
 
-key = create_key('oli', 'test')
-message = 'Hello World!'
-
-encrypted_message = encrypt(message, key)
-print(encrypted_message)
-
-decrypted_message = decrypt(encrypted_message, key)
-print(decrypted_message)
+# key = create_key('oli', 'test')
+# message = 'Hello World!'
+#
+# encrypted_message = encrypt(message, key)
+# print(encrypted_message)
+#
+# decrypted_message = decrypt(encrypted_message, key)
+# print(decrypted_message)

@@ -39,3 +39,20 @@ user_in_db: {
   'password': _string_,
   'cryptkey': _string_
 }
+
+***
+***
+# Testcases
+- Standard
+  - Login user
+  - Login multiple users
+  - create user
+  - create user with logged-in user(s)
+  - send messages
+- Special cases
+  - login user: wrong username
+  - login user: wrong password
+  - create user: username that exits
+- Exiting script
+  - before authenticated
+  - after authentication
