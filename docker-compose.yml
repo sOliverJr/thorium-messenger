@@ -1,5 +1,8 @@
 version: '3.7'
 
+volumes:
+    redis-data:
+
 services:
   mongo_db:
     image: mongo:latest
@@ -7,4 +10,14 @@ services:
     ports:
       - "5001:27017"
     container_name: thorium_mongo_db
+
+  redis_db:
+    image: redis:latest
+    command: bash -c "redis-server --appendonly yes --requirepass FukYu"
+    restart: always
+    volumes:
+        - 'redis-data:/data'
+    ports:
+      - "6379:6379"
+    container_name: thorium_redis_db
 
