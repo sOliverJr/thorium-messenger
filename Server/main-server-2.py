@@ -44,7 +44,7 @@ def broadcast_message(msg, exception_username):
             send_message_by_username(username, msg)
 
 
-def receive_message(username):
+def receive_message(username, selected_conversation_name):
     global active_connections
     global active_encryption_keys
     while True:
@@ -55,11 +55,11 @@ def receive_message(username):
             # If client wants to disconnect
             if decrypted_message == DISCONNECT_MESSAGE:
                 disconnect_user_by_username(username, '[SERVER] Request accepted, disconnecting.')
-                broadcast_message(f'[SERVER] {username} disconnected.', username)
                 return False
 
             print(f'[{username}] {decrypted_message}')
-            broadcast_message(f'[{username}] {decrypted_message}', username)
+
+
 
         except Exception as e:
             print(f'Exception in {username}´s thread: {repr(e)}')
@@ -156,6 +156,7 @@ def conversation_selection_handler(username):
         selected_conversation = conversation_db.get_conversation_by_conv_id(conversation_message[1])
         send_message_by_username(username, f'[SERVER] Conversation {str(selected_conversation["conv-id"])} selected.')
         print(f'[SERVER] {username} selected conversation {str(selected_conversation["conv-id"])}.')
+        return selected_conversation
     elif conversation_message[0] == 'create_conversation':
         # Syntax: 'create_conversation key xyz users user1 user2 user3'
         selected_conversation = create_conversation(conversation_message[4:], conversation_message[2], username)
@@ -163,6 +164,7 @@ def conversation_selection_handler(username):
             conversation_selection_handler(username)
         else:
             print(f'[SERVER] {username} selected conversation {str(selected_conversation["conv-id"])}.')
+            return selected_conversation
 
 
 def disconnect_user_by_username(username, message):
@@ -212,7 +214,15 @@ def handle_client(connection):
             # broadcast_message(f'[SERVER] {username} joined the Server!', username)
 
             # Receive user-choice
-            conversation_selection_handler(username)
+            selected_conversation = conversation_selection_handler(username)
+            print(selected_conversation)
+            selected_conversation_json = json.dumps(selected_conversation)
+            send_message_by_username(username, selected_conversation_json)
+
+            #receive_message_thread = threading.Thread(target=receive_message, args=(username,))
+            #send_message_thread = threading.Thread(target=send_message, args=(username,))
+            #receive_message_thread.start()
+            #send_message_thread.start()
 
             client_is_connected = True
             while server_running and client_is_connected:
@@ -257,5 +267,6 @@ def start():
         server_running = False
 
 
-print('[SERVER] server.py is starting...')
-start()
+if __name__ == "__main__":
+    print('[SERVER] server.py is starting...')
+    start()

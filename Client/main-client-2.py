@@ -209,11 +209,15 @@ def chose_conversation():
                 response = decrypt(client.recv(1024), cryptography_key)
                 if response == f'[SERVER] Conversation {str(message[conversation_choice-1]["conv-id"])} selected.':
                     print(f'[CLIENT] Conversation {str(message[conversation_choice-1]["conv-id"])} selected successfully.')
-                    selected_conversation = message[conversation_choice-1]
+                    # selected_conversation = message[conversation_choice-1]
                     input_is_valid = True
 
         else:
             print('[CLIENT] Please enter valid option.')
+
+        selected_conversation_json = decrypt(client.recv(MESSAGE_LENGTH), cryptography_key)
+        selected_conversation = json.loads(selected_conversation_json)
+        print(selected_conversation)
 
 
 def create_conversation():
